@@ -1,8 +1,13 @@
 const express = require('express')
 const app = express()
+var morgan = require('morgan')
 app.use(express.json())
 const cors = require('cors')
 app.use(cors())
+morgan.token('type', function (req) { return JSON.stringify(req.body) })
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :status type :type'))
+app.use(express.static('dist'))
+
 
 let items = [
     {
@@ -102,6 +107,12 @@ const generateId = () => {
   return String(maxId + 1)
 }
 
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max).toString()
+}
+
+
 app.post('/api/items', (request, response) => {
     const body = request.body
 
@@ -119,7 +130,7 @@ app.post('/api/items', (request, response) => {
 
     const item = {
         ...body,
-        id: generateId(),
+        id: getRandomInt(100000),
     }
 
     items = items.concat(item)
@@ -133,6 +144,13 @@ app.put('/api/items/:id', (request, response) => {
     items = items.map(item =>item.id===id?changedItem:item)
 
     response.json(changedItem)
+
+})
+
+app.get('/info', (request, response) => {
+    const now = new Date()
+    response.send('Inventory has info for ' + items.length + ' items <br> <br>' + now)
+
 
 })
 
