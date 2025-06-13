@@ -12,11 +12,12 @@ import axios from "axios"
 const baseUrl = "/api/items"
 
 const InventoryList = () => {
-  const style = {
+  const box_style = {
     border: "solid",
     padding: 10,
     borderWidth: 1,
     marginBottom: 5,
+    width: "25%",
   }
 
   const delete_style = {
@@ -25,14 +26,22 @@ const InventoryList = () => {
     borderWidth: 1,
     marginBottom: 5,
     color: "red",
-    float: "right"
+    float: "right",
+  }
+
+  const input_style = {
+    border: "solid",
+    padding: 10,
+    borderWidth: 1,
+    marginBottom: 5,
+    width: "100%",
   }
   //Tämä liittyy listanhakuun, aiemmin tehty.
   const [state, dispatch] = useReducer(inventoryReducer, initialState)
 
   const { items, loading, error } = state
 
-  console.log(items, loading, error)
+  //console.log(items, loading, error)
 
   useEffect(() => {
     dispatch({ type: FETCH_ACTIONS.PROGRESS })
@@ -75,6 +84,20 @@ const InventoryList = () => {
     }
     await axios.put(baseUrl + "/" + id, changedItem)
     dispatch({ type: "MODIFY_ITEM", payload: changedItem })
+    document.getElementById(`quatity ${id}`).value = changedItem.quantity
+  }
+
+  const setQuantity = async (id, quantity) => {
+    const response = await axios.get(baseUrl + "/" + id)
+    console.log("item quantity: ", response.data)
+    const itemToChange = response.data
+
+    const changedItem = {
+      ...itemToChange,
+      quantity: Number(quantity),
+    }
+    await axios.put(baseUrl + "/" + id, changedItem)
+    dispatch({ type: "MODIFY_ITEM", payload: changedItem })
   }
 
   const deleteItem = async (id) => {
@@ -99,43 +122,54 @@ const InventoryList = () => {
                 key={item.id}
               >
                 <p className="my-2 text-xl">
-                  <strong>{item.name}</strong> {item.picture} of type
-                  <br />
-                  <strong>{item.type}</strong> costs <br />
-                  <strong>{item.price}</strong> INR/KG.
-                </p>
-                <p className="mb-2 text-lg">
-                  Available in Stock:
-                  <button
-                    onClick={() => changeQuantity(item.id, -1)}
-                    style={style}
-                  >
-                    -1
-                  </button>
-                  <button
-                    onClick={() => changeQuantity(item.id, -5)}
-                    style={style}
-                  >
-                    -5
-                  </button>
-                  <strong>{item.quantity}</strong>
-                  <button
-                    onClick={() => changeQuantity(item.id, 1)}
-                    style={style}
-                  >
-                    +1
-                  </button>
-                  <button
-                    onClick={() => changeQuantity(item.id, 5)}
-                    style={style}
-                  >
-                    +5
-                  </button>
                   <button
                     onClick={() => deleteItem(item.id)}
                     style={delete_style}
                   >
                     X
+                  </button>{" "}
+                  <strong>{item.name}</strong> {item.picture} of type{" "}
+                  <strong>{item.type}</strong> costs{" "}
+                  <strong>{item.price}</strong> EUR.
+                </p>
+                <p className="mb-2 text-lg">
+                  Available in Stock:{" "}
+                  <strong>
+                    <input
+                      id={`quatity ${item.id}`} 
+                      type="number"
+                      defaultValue={item.quantity}
+                      onChange={(e) => {
+                        console.log("input value ", e.target.value)
+                        setQuantity(item.id, e.target.value)
+                      }}
+                      style={input_style}
+                    />
+                  </strong>{" "}
+                  <br />
+                  <button
+                    onClick={() => changeQuantity(item.id, -5)}
+                    style={box_style}
+                  >
+                    -5
+                  </button>
+                  <button
+                    onClick={() => changeQuantity(item.id, -1)}
+                    style={box_style}
+                  >
+                    -1
+                  </button>
+                  <button
+                    onClick={() => changeQuantity(item.id, 1)}
+                    style={box_style}
+                  >
+                    +1
+                  </button>
+                  <button
+                    onClick={() => changeQuantity(item.id, 5)}
+                    style={box_style}
+                  >
+                    +5
                   </button>
                 </p>
               </li>
